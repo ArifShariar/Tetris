@@ -19,7 +19,13 @@ volatile int version = 0;
 volatile int board[17][9];
 int blockStore[17][9];
 
+/* for start */
 
+int isStarted = 0;
+int isOngoing = 0;
+int isFinalScoreSent = 0;
+
+/*-----*/
 int getRow(int x) {
 	int row = 0;
 	for (int i = 1; i <= 8; i++) row = row | (board[x][i] << (8-i));
@@ -264,8 +270,8 @@ void makeBOARD(){  /////k = 60 and j = 20
 
 		for(i = 1; i <= 16; i++){
 			int val = valArr[i-1];
-			for (j = 1; j <= 20; j++){
-				// change 20 to increase speed
+			for (j = 1; j <= 10; j++){
+				// change loop count to change speed, lower will be faster
 				PORTA = scroll_down[i-1];
 				PORTC = val;
 			}
@@ -343,7 +349,12 @@ int clearMatchedRow(){
 
 void Play(){
 
-	if(isBoardful()==1) memset(board,0,sizeof(board));
+	if(isBoardful()==1){
+		memset(board,0,sizeof(board));
+		makeBOARD();
+		isOngoing=0;
+		return;
+	} 
 	
 	if (curX == 1) {
 		type = (rand() % 4) + 1;
@@ -444,14 +455,44 @@ int main(void)
 
 	DDRB = 0x00;
 	DDRA = 0xFF;
-	DDRD = 0x01;
+	DDRD = 0b00010001;
 
 	initInterrupt();
 
 	sei();
 	srand(time(0));
 	while(1){
-		Play();
+		if (isStarted==1 && isOngoing ==1)
+		{
+			// game going normally, not filled
+			Play();
+		}
+		else if(isStarted == 1 && isOngoing==0){
+			// game going normally, board filled
+			if(isFinalScoreSent==0){
+				PORTD = 0b00010000;
+				_delay_ms(50);
+				PORTD = 0b00000000;
+				isFinalScoreSent =1;
+			}
+			
+			
+			uint8_t temp = PINB & 0x01;
+			if(temp==0x01){
+				isStarted =1;
+				isOngoing=1;
+			}
+			
+			
+		}
+		else{
+			// initial
+			if(PINB==0b00000001){
+				isStarted =1;
+				isOngoing=1;
+			}
+		}
+		
 	}
 
 }

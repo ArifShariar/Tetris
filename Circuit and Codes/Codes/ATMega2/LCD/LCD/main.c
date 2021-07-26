@@ -33,15 +33,24 @@ ISR(INT0_vect){
 }
 
 ISR(INT1_vect){
-	
-	if(isStarted==0 && isOngoing==0){
+	if(isStarted==0){
+		//Lcd4_Clear();
+		i=0;
 		isStarted = 1;
 		isOngoing = 1;
-		PORTB = 0b00000010;
-		_delay_ms(50);
-		PORTB = 0b00000000;
 	}
-	
+	else if (isStarted==1 && isOngoing==0)
+	{
+		i=0;
+		isStarted = 1;
+		isOngoing = 1;
+	}
+
+}
+
+ISR(INT2_vect){
+	/* showing final score*/
+	isOngoing = 0;
 	
 }
 
@@ -53,7 +62,8 @@ int main(void)
 	DDRB = 0x00;
 	
 	MCUCR = MCUCR | 0b00000010 | 0b00001000;
-	GICR = (1<<INT0)|(1<<INT1);
+	MCUCSR = 0x00;
+	GICR = (1<<INT0)|(1<<INT1)|(1<<INT2);
 	sei();
 	
 	Lcd4_Init();
@@ -72,6 +82,16 @@ int main(void)
 			Lcd4_Set_Cursor(1,1);
 			Lcd4_Write_String("SCORE: ");
 			Lcd4_Write_String(score);
+		}
+		else if(isStarted==1 && isOngoing ==0){
+			char score[10];
+			sprintf(score,"%d",i);
+			Lcd4_Set_Cursor(1,1);
+			Lcd4_Write_String("FINAL SCORE: ");
+			Lcd4_Write_String(score);
+			Lcd4_Set_Cursor(2,1);
+			Lcd4_Write_String("Press START!");
+			Lcd4_Clear();
 		}
 		
 	}
