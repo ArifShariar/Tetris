@@ -37,3 +37,6 @@ A simple Tetris game simulation on ATmega32 using [Proteus](https://www.labcente
 
 **Project Supervisor**
 Masum Mushfiq
+
+**Demonstration Video**
+Watch our project demonstration video [here!](https://youtu.be/hszSqfsKH8A)
